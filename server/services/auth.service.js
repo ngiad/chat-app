@@ -16,7 +16,7 @@ export default class authService {
     },
   });
 
-  async otb() {
+   otp() {
     return Math.floor(Math.random() * 10000);
   }
 
@@ -45,14 +45,24 @@ export default class authService {
 
         if (userExist) throw new Error("Email has already been registereds");
         else {
-          const user = await this.model.create({ email, password, name });
-          const token = this.generateToken(user["_id"]);
+          const otp = this.otp()
 
+          const user = await this.model.create({ email, password, name,otp });
+          await this.transporter.sendMail({
+            from:"devwebdainghia@gmail.com",
+            to:email,
+            subject:"OTP",
+            html:`<h1>${otp}</h1>`
+          })
+
+          const token = this.generateToken(user["_id"]);
           const { name, avatar, email } = user;
 
           resolve({});
         }
-      } catch (error) {}
+      } catch (error) {
+        
+      }
     });
   }
 }
