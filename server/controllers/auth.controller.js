@@ -4,8 +4,7 @@ export default class AuthController{
     constructor(){
         this.service = new authService()
     }
-
-    async register(req,res,next){
+    register = async(req,res,next) =>{
         try {
             res.json(await this.service.register(req.body))
         } catch (error) {
