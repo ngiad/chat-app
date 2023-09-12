@@ -16,11 +16,7 @@ export default class authService {
     },
   });
 
-<<<<<<< HEAD
-   otp() {
-=======
   otp() {
->>>>>>> 9af0b809cad4ad12e044491495c23d58fa6f1d27
     return Math.floor(Math.random() * 10000);
   }
 
