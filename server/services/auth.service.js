@@ -17,7 +17,7 @@ export default class authService {
   });
 
   otp() {
-    return Math.floor(Math.random() * 10000);
+    return Math.floor(Math.random() *(10000 - 1000) + 1000);
   }
 
   generateToken = (id) => {
@@ -48,14 +48,14 @@ export default class authService {
           const otp =  this.otp()
           const user = await this.model.create({ email, password, name, otp });
 
-          await this.transporter.sendMail({
-            from : "devwebdainghia@gmail.com",
-            to : email, 
-            subject : "OTP",
-            html : `<h1>OTP ${user.name}</h1>
-                <h3>${otp}</h3>
-            `
-          })
+          // await this.transporter.sendMail({
+          //   from : "devwebdainghia@gmail.com",
+          //   to : email, 
+          //   subject : "OTP",
+          //   html : `<h1>OTP ${user.name}</h1>
+          //       <h3>${otp}</h3>
+          //   `
+          // })
 
           resolve({compete : true});
         }
