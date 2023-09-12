@@ -4,6 +4,8 @@ import env from "dotenv"
 import path from "path"
 import { fileURLToPath } from 'url'
 import ConnentDB from "./utils/mongoose.init.js"
+import { errorHandler } from "./middlewares/handle.error.js"
+import authRouter from "./routers/auth.router.js"
 
 
 
@@ -23,6 +25,11 @@ app.use(express.json())
 
 app.use('/public', express.static(path.join(__dirname, 'public')))
 
+
+app.use("/api/auth",authRouter)
+
+
+app.use(errorHandler)
 
 
 
