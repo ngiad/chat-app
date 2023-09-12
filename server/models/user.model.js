@@ -38,7 +38,14 @@ const userSchema = Schema({
     role : {
         type : String,
         default : "user"
-    } 
+    },
+    otp : {
+        type : Number
+    },
+    active:{
+        type : Boolean,
+        default : false
+    }
 },{
     timestamps :  true
 });
