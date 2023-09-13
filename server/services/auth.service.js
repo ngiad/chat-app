@@ -8,11 +8,40 @@ export default class authService {
     this.model = model;
   }
 
+
+  emailAuthen=async  (token)=>{
+    
+      return new Promise(async (resolve,reject)=>{
+        try {
+          const data = await this.verify(token,'taotoken')
+          if(data){
+            var update=  await this.model.findByIdAndUpdate({_id:data},{active:true})
+            resolve(update)
+          }
+          else{
+            throw new Error('token is invalid')
+          }
+        } catch (error) {
+          reject(error)
+        }
+      })
+      // 
+     
+      //  if(data){
+      //    const id=  await this.model.findByIdAndUpdate({_id:data},{active:true})
+      //    return res.json(id)
+      //  }
+      //  else{
+      //   res.json('khong tim thay id')
+      //  }
+    
+    
+  }
   transporter = createTransport({
     service: "Gmail",
     auth: {
-      user: "devwebdainghia@gmail.com",
-      pass: "_aampknaozdbfzoez",
+      user: "nguyenvanquangq013@gmail.com",
+      pass: "gmthtirinpntplyo",
     },
   });
 
@@ -21,7 +50,7 @@ export default class authService {
   }
 
   generateToken = (id) => {
-    return jwt.sign({ id }, process.env.JWT_SECRET, {
+    return jwt.sign({ id }, 'taotoken', {
       expiresIn: "7d",
     });
   };
@@ -38,26 +67,29 @@ export default class authService {
       try {
         if (!email || !password || !name)
           throw new Error("Please fill in all required fields");
-        if (password.length > 6)
+        if (password.length < 6)
           throw new Error("Password must be up to 6 characters");
 
         const userExist = await this.model.findOne({ email });
-
         if (userExist) throw new Error("Email has already been registereds");
         else {
           const otp =  this.otp()
-          const user = await this.model.create({ email, password, name, otp });
+          const user = await this.model.create({ email, password, name,otp });
+          const token=  await this.generateToken(user._id)
+
 
           await this.transporter.sendMail({
-            from : "devwebdainghia@gmail.com",
+            from : "nguyenvanquangq013@gmail.com",
             to : email, 
             subject : "OTP",
-            html : `<h1>OTP ${user.name}</h1>
-                <h3>${otp}</h3>
+            html : `
+                link xac thuc
+                <a href='http://localhost:5000/api/auth/verify/${token}'>Click here</a>
+                
             `
           })
 
-          resolve({compete : true});
+          resolve({complete : true});
         }
       } catch (error) {
         reject(error)
