@@ -1,0 +1,90 @@
+.NavBar {
+  flex: 0 0 64px;
+  min-width: 64px;
+  text-align: center;
+  color: #fff;
+  padding-inline: 50;
+  line-height: 64px;
+  background-color: #0091ff;
+  display: flex;
+  flex-direction: column;
+  padding-top: 32px;
+  height: 100vh;
+}
+
+.avatar {
+  max-height: 64px;
+  margin-bottom: 14px;
+}
+.avatar img {
+  height: 72%;
+  border-radius: 999px;
+}
+.icon {
+  display: flex;
+  justify-content: center;
+  height: 64px;
+  align-items: center;
+}
+
+.AiFillMessage {
+  font-size: 28px;
+}
+
+.icon:hover {
+  background-color: #006edc;
+}
+
+.setting {
+  margin-top: 221px;
+}
+
+.search {
+  background: white;
+  min-width: 344px;
+  max-height: 64px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-direction: row;
+  gap: 10px;
+  border-right: 1px solid #155a9e;
+}
+
+.inputSearch {
+  background-color: #eaedf0;
+  width: 75%;
+  height: 50%;
+  border-radius: 5px;
+  display: flex;
+  align-items: center;
+  padding: 0 5px;
+  gap: 5px;
+}
+
+.inputSearch i {
+  display: flex;
+  align-items: center;
+  height: 100%;
+}
+.close {
+  /* color: #eaedf0; */
+}
+
+.inputSearch input {
+  display: flex;
+  align-items: center;
+  height: 100%;
+  flex: 1;
+  height: 70%;
+  outline: none;
+  border: none;
+  background-color: #eaedf0;
+}
+
+.add {
+  max-height: 64px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}

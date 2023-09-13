@@ -1,13 +1,15 @@
-import React from 'react'
+import React from "react";
+import NavBarVertical from "./NavBarVertical";
+import "bootstrap/dist/css/bootstrap.min.css"; // Import Bootstrap CSS
+import styles from "@/styles/layoutStyles/Default.module.css";
 
-const DefaultLayout = ({children}) => {
-     
+const DefaultLayout = ({ children }: any) => {
   return (
-    <div>
-     <h1>Header</h1>
-     {children}
+    <div className="d-flex">
+      <NavBarVertical />
+      {children}
     </div>
-  )
-}
+  );
+};
 
-export default DefaultLayout
+export default DefaultLayout;
