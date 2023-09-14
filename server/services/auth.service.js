@@ -41,7 +41,7 @@ export default class authService {
         var find= await model.findOne({_id:new mongoose.Types.ObjectId(data._id)})
         if (!find) throw new Error('user is not defined')
         else{
-            await model.updateOne({_id:new mongoose.Types.ObjectId(data.id)},{password:data.newPassword})
+            var update=await model.updateOne({_id:new mongoose.Types.ObjectId(data._id)},{password:data.newPassword})
             resolve({update:'success'})
         }
       } catch (error) {
