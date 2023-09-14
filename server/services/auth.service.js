@@ -2,6 +2,7 @@ import model from "../models/user.model.js";
 import jwt from "jsonwebtoken";
 import bcrypt from "bcryptjs";
 import { createTransport } from "nodemailer";
+import mongoose from "mongoose";
 
 export default class authService {
   constructor() {
@@ -9,14 +10,20 @@ export default class authService {
   }
 
 
-  emailAuthen=async  (token)=>{
+  emailAuthenRegister=  async  (token)=>{
     
       return new Promise(async (resolve,reject)=>{
         try {
-          const data = await this.verify(token,'taotoken')
+          var data =  this.verify(token,'taotoken')
+          //  console.log(data);
           if(data){
-            var update=  await this.model.findByIdAndUpdate({_id:data},{active:true})
-            resolve(update)
+            var update=  await this.model.updateOne({_id:new mongoose.Types.ObjectId(data)},{active:true})
+            if(update){
+              resolve({register:'success'})
+            }
+            else{
+              throw new Error('update failed')
+            }
           }
           else{
             throw new Error('token is invalid')
@@ -25,17 +32,6 @@ export default class authService {
           reject(error)
         }
       })
-      // 
-     
-      //  if(data){
-      //    const id=  await this.model.findByIdAndUpdate({_id:data},{active:true})
-      //    return res.json(id)
-      //  }
-      //  else{
-      //   res.json('khong tim thay id')
-      //  }
-    
-    
   }
   transporter = createTransport({
     service: "Gmail",
@@ -61,7 +57,11 @@ export default class authService {
 
   passwordIsCorrect = async (passwordHash, userPassWord) =>
     await bcrypt.compare(passwordHash, userPassWord);
+  
 
+
+  // resendEmail = async()
+// dang ki 
   register = ({ email, password, name }) => {
     return new Promise(async (resolve, reject) => {
       try {
@@ -75,8 +75,8 @@ export default class authService {
         else {
           const otp =  this.otp()
           const user = await this.model.create({ email, password, name,otp });
-          const token=  await this.generateToken(user._id)
-
+          var token=   this.generateToken(user._id)
+          
 
           await this.transporter.sendMail({
             from : "nguyenvanquangq013@gmail.com",
@@ -84,7 +84,7 @@ export default class authService {
             subject : "OTP",
             html : `
                 link xac thuc
-                <a href='http://localhost:5000/api/auth/verify/${token}'>Click here</a>
+                <a href='http://localhost:5000/api/auth/forgot/verify/${token}'>Click here</a>
                 
             `
           })
@@ -95,5 +95,63 @@ export default class authService {
         reject(error)
       }
     });
+  }
+
+  // dang nhap
+  login=({email,password})=>{
+      return new Promise(async(resolve,reject)=>{
+        try {
+          if (!email || !password )
+              throw new Error("Please fill in all required fields");
+          var account = await this.model.findOne({email:email})
+          
+          if(!account) {throw new Error('your email is not exist')}
+          else {
+              var correct = await this.passwordIsCorrect(password,account.password)
+              if(!correct) throw new Error('password is wrong')
+              else {
+                  var token =  this.generateToken(account._id)
+                  resolve(token)
+              }
+          }
+        } catch (error) {
+          reject(error)
+        }
+      })
+  }
+
+
+  // forgot
+
+  forgot=({email,newPassword})=>{
+    return new Promise(async(resolve, reject) => {
+        try {
+          if(!email,!newPassword) throw new Error('Please fill in all required fields')
+
+          if (newPassword.length < 6)
+          throw new Error("Password must be up to 6 characters");
+
+          var account= this.model.findOne({email:email})
+          console.log(account);
+          if(!account)throw new Error('your email is not exist')
+          else {
+            var token=   this.generateToken(account._id)
+            console.log(token);
+            await this.transporter.sendMail({
+              from : "nguyenvanquangq013@gmail.com",
+              to : email, 
+              subject : "FORGOT PASSWORD",
+              html : `
+                  link xac thuc
+                  <a href='http://localhost:5000/api/auth/verify/${token}'>Click here</a>
+                  
+              `
+            })
+            resolve({recieve:true})
+          }
+        } catch (error) {
+           reject(error)
+        }
+    })
   }
 }
