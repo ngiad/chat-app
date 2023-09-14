@@ -15,7 +15,7 @@ export default class authService {
       return new Promise(async (resolve,reject)=>{
         try {
           var data =  this.verify(token,'taotoken')
-          //  console.log(data);
+
           if(data){
             var update=  await this.model.updateOne({_id:new mongoose.Types.ObjectId(data)},{active:true})
             if(update){
@@ -33,6 +33,22 @@ export default class authService {
         }
       })
   }
+
+  emailAuthenForgot= async(token )=>{
+    return new Promise( async(resolve, reject) => {
+      try {
+        var data = jwt.verify(token,'taotoken')
+        var find= await model.findOne({_id:new mongoose.Types.ObjectId(data._id)})
+        if (!find) throw new Error('user is not defined')
+        else{
+            await model.updateOne({_id:new mongoose.Types.ObjectId(data.id)},{password:data.newPassword})
+            resolve({update:'success'})
+        }
+      } catch (error) {
+        reject(error)
+      }
+    })
+  }
   transporter = createTransport({
     service: "Gmail",
     auth: {
@@ -45,6 +61,12 @@ export default class authService {
     return Math.floor(Math.random() * 10000);
   }
 
+  generateTokenForgot=(_id,newPassword)=>{
+    return jwt.sign({ _id:_id,newPassword :newPassword}, 'taotoken', {
+      expiresIn: "7d",
+    });
+  }
+  
   generateToken = (id) => {
     return jwt.sign({ id }, 'taotoken', {
       expiresIn: "7d",
@@ -103,7 +125,7 @@ export default class authService {
         try {
           if (!email || !password )
               throw new Error("Please fill in all required fields");
-          var account = await this.model.findOne({email:email})
+          var account = await this.model.findOne({email})
           
           if(!account) {throw new Error('your email is not exist')}
           else {
@@ -126,25 +148,23 @@ export default class authService {
   forgot=({email,newPassword})=>{
     return new Promise(async(resolve, reject) => {
         try {
+  
           if(!email,!newPassword) throw new Error('Please fill in all required fields')
 
           if (newPassword.length < 6)
           throw new Error("Password must be up to 6 characters");
 
-          var account= this.model.findOne({email:email})
-          console.log(account);
+          var account=await this.model.findOne({email:email})
           if(!account)throw new Error('your email is not exist')
           else {
-            var token=   this.generateToken(account._id)
-            console.log(token);
+            var token=   this.generateTokenForgot(account._id,newPassword)
             await this.transporter.sendMail({
               from : "nguyenvanquangq013@gmail.com",
               to : email, 
               subject : "FORGOT PASSWORD",
               html : `
                   link xac thuc
-                  <a href='http://localhost:5000/api/auth/verify/${token}'>Click here</a>
-                  
+                  <a href='http://localhost:5000/api/auth/forgot/verify/${token}'>Click here</a>
               `
             })
             resolve({recieve:true})

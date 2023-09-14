@@ -16,7 +16,7 @@ export default class AuthController{
 
     emailAuthen=async(req,res,next)=>{
         try {
-            var data=await this.service.emailAuthen(req.params.id)
+            var data=await this.service.emailAuthenRegister(req.params.id)
             res.json(data)
             
         } catch (error) {
@@ -25,6 +25,16 @@ export default class AuthController{
         }
         
     }
+    emailAuthenForgot=async(req,res,next)=>{
+        try {
+            var data=await this.service.emailAuthenForgot(req.params.id)
+            res.json(data)
+        } catch (error) {
+            res.status(400)
+            next(error)
+        }
+    }
+
 
     login= async(req,res,next)=>{
         try {
@@ -41,12 +51,12 @@ export default class AuthController{
     forgot= async(req,res,next)=>{
         try {
             var forgot= await this.service.forgot(req.body)
-            console.log(forgot);
-            // res.json(forgot)
+            res.json(forgot)
             
         } catch (error) {
             res.status(400)
             next(error)
         }
     }
+
 }
