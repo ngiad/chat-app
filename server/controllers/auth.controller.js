@@ -40,7 +40,7 @@ export default class AuthController{
         try {
             var token = await this.service.login(req.body)
             if(token){
-                res.json('dang nhap thanh cong')
+                res.json(`dang nhap thanh cong:${token}`)
             }
             
         } catch (error) {
@@ -59,4 +59,26 @@ export default class AuthController{
         }
     }
 
+    refreshToken= async(req,res,next)=>{
+        try {
+            
+            var refreshToken=await this.service.refreshToken(req.body)
+            
+            res.json(refreshToken)
+        } catch (error) {
+            res.status(400)
+            next(error)
+        }     
+    }
+
+
+    changePassword=async(req,res,next)=>{
+        try {
+            var update=await this.service.updatePassword(req.body)
+            res.json(update)
+        } catch (error) {
+            res.status(400)
+            next(error)
+        }     
+    }
 }
