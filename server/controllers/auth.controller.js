@@ -1,5 +1,5 @@
 import authService from "../services/auth.service.js"
-
+import  cookieParser from "cookie-parser"
 export default class AuthController{
     constructor(){
         this.service = new authService()
@@ -40,6 +40,7 @@ export default class AuthController{
         try {
             var token = await this.service.login(req.body)
             if(token){
+                res.cookie('token',token)
                 res.json(`dang nhap thanh cong:${token}`)
             }
             

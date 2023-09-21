@@ -3,7 +3,7 @@ import jwt from "jsonwebtoken";
 import bcrypt from "bcryptjs";
 import { createTransport } from "nodemailer";
 import mongoose from "mongoose";
-
+import  cookieParser from "cookie-parser"
 export default class authService {
   constructor() {
     this.model = model;
@@ -21,14 +21,14 @@ export default class authService {
     }
   }
 
-  emailAuthenRegister = async (token) => {
+  emailAuthenRegister =  (token) => {
     return new Promise(async (resolve, reject) => {
       try {
         var data = this.verify(token, "taotoken");
-
+        console.log(data);
         if (data) {
           var update = await this.model.updateOne(
-            { id: new mongoose.Types.ObjectId(data) },
+            { _id: new mongoose.Types.ObjectId(data) },
             { active: true }
           );
           if (update) {
@@ -45,7 +45,7 @@ export default class authService {
     });
   };
 
-  emailAuthenForgot = async (token) => {
+  emailAuthenForgot =  (token) => {
     return new Promise(async (resolve, reject) => {
       try {
         var data = jwt.verify(token, "taotoken");
@@ -113,8 +113,7 @@ export default class authService {
         const userExist = await this.model.findOne({ email });
         if (userExist) throw new Error("Email has already been registereds");
         else {
-          const otp = this.otp();
-          const user = await this.model.create({ email, password, name, otp });
+          const user = await this.model.create({ email, password, name });
           var token = this.generateToken(user.id);
 
           await this.transporter.sendMail({
@@ -123,7 +122,7 @@ export default class authService {
             subject: "OTP",
             html: `
                 link xac thuc
-                <a href='http://localhost:5000/api/auth/forgot/verify/${token}'>Click here</a>
+                <a href='http://localhost:5000/api/auth/verify/${token}'>Click here</a>
                 
             `,
           });
@@ -142,18 +141,18 @@ export default class authService {
       try {
         if (!email || !password)
           throw new Error("Please fill in all required fields");
-        var account = await this.model.findOne({ email });
+        let account = await this.model.findOne({ email });
 
         if (!account) {
           throw new Error("your email is not exist");
         } else {
-          var correct = await this.passwordIsCorrect(
+          let correct = await this.passwordIsCorrect(
             password,
             account.password
           );
           if (!correct) throw new Error("password is wrong");
           else {
-            var token = this.generateToken(account.id);
+            let token = this.generateToken(account.id);
             resolve(token);
           }
         }

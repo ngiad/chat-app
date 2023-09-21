@@ -62,5 +62,6 @@ userSchema.pre("save",async function(next){
 })
 
 
-
 export default model("user-chat-app",userSchema)
+
+
