@@ -18,7 +18,7 @@ const roomSchema = Schema(
         required : true
     },
     isGroup : {
-        tyoe : Boolean,
+        type : Boolean,
         default :  false
     },
 

@@ -9,19 +9,7 @@ export default class JwtData {
         });
       };
     
-    // checkAdmin(){
-    //     if(role == 'admin')
-    // }
-
-    // checkManager(){
-    //     if(role == 'admin' || role == 'manager')
-
-    // }
-
-    // checkUser(){
-    //     if(role == 'admin' || role == 'manager' || role == ủe)
-
-    // }
+    
     
     verifyTokenTokenAdmin =async(req,res,next)=>{
         try {
@@ -29,19 +17,26 @@ export default class JwtData {
             
             if(token){
              let data=jwt.verify(token,'taotoken') 
-          
+             
              if(!data)throw new Error('token is not valid')
              var user=await model.findOne({_id:data.id})
              if(!user.active)throw new Error('this account is not active')
-             req.data=data;
-             if (data.role=='admin'){
+             if(user.role!=='admin'){
+                 throw new Error('this account is not admin')
+             }
+            
+
+            if (user.role=='admin'){
+                req.data=user;
                 next()
              }
+             
              
             }
             else throw new Error('you are not authenticated')
         } catch (error) {
-            res.status(400).json(error)
+            res.status(400)
+            next(error)
 
         }
     }
@@ -54,12 +49,12 @@ export default class JwtData {
             
             if(token){
              let data=jwt.verify(token,'taotoken') 
-          
              if(!data)throw new Error('token is not valid')
              var user=await model.findOne({_id:data.id})
              if(!user.active)throw new Error('this account is not active')
-             req.data=data;
-             if (data.role=='manager'){
+             
+             if (user.role=='manager'){
+                req.data=user;
                 next()
              }
              
@@ -81,7 +76,7 @@ export default class JwtData {
              if(!data)throw new Error('token is not valid')
              var user=await model.findOne({_id:data.id})
              if(!user.active)throw new Error('this account is not active')
-             req.data=data;
+             req.data=user;
              
              next()
             }

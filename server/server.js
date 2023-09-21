@@ -8,7 +8,7 @@ import { errorHandler } from "./middlewares/handle.error.js"
 import authRouter from "./routers/auth.router.js"
 import cookieParser from "cookie-parser"
 import FriendRouter from './routers/friend.router.js'
-
+import userRouter from "./routers/user.router.js"
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
@@ -33,7 +33,7 @@ app.use("/api/auth",authRouter)
 
 app.use("/api/friends",FriendRouter)
 
-
+app.use('/api/user',userRouter)
 
 app.use(errorHandler)
 

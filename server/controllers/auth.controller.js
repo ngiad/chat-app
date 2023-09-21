@@ -64,7 +64,7 @@ export default class AuthController{
         try {
             
             var refreshToken=await this.service.refreshToken(req.body)
-            
+            res.cookies('token',refreshToken)
             res.json(refreshToken)
         } catch (error) {
             res.status(400)
