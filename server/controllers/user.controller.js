@@ -29,7 +29,7 @@ export default class UserController{
     }
     getProfile = async(req,res,next)=>{
         try {
-            var getProfile = await this.service.getProfile(req.data.id)
+            var getProfile = await this.service.getProfile(req.user.id)
             res.json(getProfile)
         } catch (error) {
             res.status(400)
@@ -40,7 +40,7 @@ export default class UserController{
 
     updateProfile = async(req,res,next)=>{
         try {
-            const update = await this.service.updateProfile(req.body.email , req.body.avatar, req.data.id)
+            const update = await this.service.updateProfile(req.body.email , req.body.avatar, req.user.id)
             res.json(update)
         } catch (error) {
             res.status(400)

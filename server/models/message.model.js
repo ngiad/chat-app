@@ -1,6 +1,6 @@
 import { Schema, model } from "mongoose";
 
-const messageSchema = Schema(
+const messageSchema =  Schema(
   {
     message: {
       type: String,
@@ -14,7 +14,7 @@ const messageSchema = Schema(
       type: [
         {
           user: { type: Schema.Types.ObjectId },
-          hidden: { type: Boolean, default: false },
+         
         },
       ],
       default : []

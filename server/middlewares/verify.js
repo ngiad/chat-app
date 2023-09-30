@@ -76,7 +76,7 @@ export default class JwtData {
              if(!data)throw new Error('token is not valid')
              var user=await model.findOne({_id:data.id})
              if(!user.active)throw new Error('this account is not active')
-             req.data=user;
+             req.user=user;
              
              next()
             }

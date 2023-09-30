@@ -2,10 +2,13 @@ import { Schema, model } from "mongoose";
 
 const roomSchema = Schema(
   {
-    usersRoom: [
+   queryTime:{
+    type:Date
+   } ,
+    userRoom: [
       {
-        user: { type: Schema.Types.ObjectId },
-        queryTime: { type: Date },
+         type: Schema.Types.ObjectId ,
+          ref:'user-chat-app'
       },
     ],
     

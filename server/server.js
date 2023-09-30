@@ -9,6 +9,9 @@ import authRouter from "./routers/auth.router.js"
 import cookieParser from "cookie-parser"
 import FriendRouter from './routers/friend.router.js'
 import userRouter from "./routers/user.router.js"
+import roomRouter from "./routers/room.router.js"
+import messageRouter from "./routers/message.router.js"
+
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
@@ -34,6 +37,10 @@ app.use("/api/auth",authRouter)
 app.use("/api/friends",FriendRouter)
 
 app.use('/api/user',userRouter)
+
+app.use('/api/rooms',roomRouter)
+
+app.use('/api/messages',messageRouter)
 
 app.use(errorHandler)
 
