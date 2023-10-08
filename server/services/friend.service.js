@@ -15,7 +15,7 @@ export default class FriendService{
             try {
                 const user = await this.model.findOne({_id:data})
                 if(!user){
-                    throw new Error('khong tim duov data ta')
+                    throw new Error('khong tim duoc data ta')
                 }
                 resolve(user.list_friend)
             } catch (error) {

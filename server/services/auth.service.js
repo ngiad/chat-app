@@ -4,12 +4,20 @@ import bcrypt from "bcryptjs";
 import { createTransport } from "nodemailer";
 import mongoose from "mongoose";
 import  cookieParser from "cookie-parser"
+import fs from 'fs'
 export default class authService {
   constructor() {
     this.model = model;
   }
 
-
+  validateEmail(email) {
+    const pattern = /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/;
+    return pattern.test(email);
+  }
+   validatePassword(password) {
+    const pattern = /^(?=.*[a-zA-Z])(?=.*\d).{6,}$/;
+    return pattern.test(password);
+  }
   bcryptPassword= async(password)=>{
     try {
       const salt = await bcrypt.genSalt(10);
@@ -86,10 +94,14 @@ export default class authService {
       expiresIn: "7d",
     });
   };
-
+  generateRefreshToken= (id,token)=>{
+    return jwt.sign({ id,token }, process.env.REFRESH_TOKEN_SECRET, {
+      expiresIn:  process.env.TIME_REFRESHTOKEN,
+    });
+  }
   generateToken = (id) => {
-    return jwt.sign({ id }, "taotoken", {
-      expiresIn: "7d",
+    return jwt.sign({ id }, process.env.TOKEN_SECRET, {
+      expiresIn:  process.env.TIME_TOKEN,
     });
   };
 
@@ -105,6 +117,8 @@ export default class authService {
   register = ({ email, password, name }) => {
     return new Promise(async (resolve, reject) => {
       try {
+        if(!this.validateEmail(email))throw new Error('wrong email format')
+        if(!this.validatePassword(password)) throw new Error('Password must have at least 6 characters including letters and numbers ')
         if (!email || !password || !name)
           throw new Error("Please fill in all required fields");
         if (password.length < 6)
@@ -129,6 +143,7 @@ export default class authService {
 
           resolve({ complete: true });
         }
+
       } catch (error) {
         reject(error);
       }
@@ -139,6 +154,9 @@ export default class authService {
   login = ({ email, password }) => {
     return new Promise(async (resolve, reject) => {
       try {
+        // console.log(process.env.TIME_TOKEN);
+        if(!this.validateEmail(email))throw new Error('wrong email format')
+        if(!this.validatePassword(password)) throw new Error('Password must have at least 6 characters including letters and numbers ')
         if (!email || !password)
           throw new Error("Please fill in all required fields");
         let account = await this.model.findOne({ email });
@@ -153,7 +171,13 @@ export default class authService {
           if (!correct) throw new Error("password is wrong");
           else {
             let token = this.generateToken(account.id);
-            resolve(token);
+            let refreshToken = this.generateRefreshToken(account.id,token)
+            resolve({
+              refreshToken:refreshToken,
+              Accesstoken:`${token}`,
+              _id:`${account._id}`
+            });
+
           }
         }
       } catch (error) {
@@ -161,7 +185,17 @@ export default class authService {
       }
     });
   };
-
+ //logout
+   logout=(accessToken)=>{
+    return new Promise(async(resolve, reject) => {
+      try {
+        if(!accessToken)throw new Error('token sai ')
+        resolve({blacklist_token:accessToken})
+      } catch (error) {
+        reject(error)
+      }
+    })
+   }
   // forgot
 
   forgot = ({ email, newPassword }) => {
@@ -194,17 +228,21 @@ export default class authService {
     });
   };
 
-  refreshToken = ( oldtoken ) => {
+  refreshToken = ( oldtoken,oldReFreshToken ) => {
     return new Promise(async (resolve, reject) => {
       try {
         
-        if(!oldtoken)throw new Error('token is invalid')
-        var check = jwt.verify(oldtoken.token,'taotoken')
-        if(!check)throw new Error('Failed to verify refresh token')
-        var refreshToken= this.generateToken(check.id)
-        if(refreshToken){
-           resolve(refreshToken)
-        }
+        if(!oldtoken||!oldReFreshToken)throw new Error('token is invalid')
+        // var checkToken = jwt.verify(oldtoken.token,'taotoken')
+        var checkReFreshToken =jwt.verify(oldReFreshToken,process.env.REFRESH_TOKEN_SECRET)
+        if(!checkReFreshToken)throw new Error('you must login back')
+        if(checkReFreshToken.token!==oldtoken) throw new Error('refresh token and access token do not match')
+        let newToken = this.generateToken(checkReFreshToken.id)
+        let newReFreshToken = this.generateRefreshToken(checkReFreshToken.id,newToken)
+        resolve({
+          accessToken:newToken,
+          refreshToken:newReFreshToken
+        })
       } catch (error) {
         reject(error)
       }

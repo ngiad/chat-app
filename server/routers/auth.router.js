@@ -4,8 +4,9 @@ import AuthController from "../controllers/auth.controller.js"
 
 const authRouter = Router()
 
-const { register,emailAuthen,login,forgot,emailAuthenForgot ,refreshToken, changePassword} = new AuthController()
+const { register,emailAuthen,login,forgot,emailAuthenForgot ,refreshToken, changePassword,logout} = new AuthController()
 authRouter.post("/login",login)
+authRouter.post('/logout',logout)
 authRouter.post("/register",register)
 authRouter.post("/refresh",refreshToken)
 authRouter.post('/forgot',forgot)

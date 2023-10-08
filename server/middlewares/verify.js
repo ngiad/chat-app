@@ -68,10 +68,12 @@ export default class JwtData {
 
     verifyToken =async (req,res,next) => {
         try {
-            const token = req.cookies.token
+            const accessToken = req.cookies.accessToken
+            let blacklist_Token= req.cookies.blacklist_Token
+            if (accessToken==blacklist_Token)throw new Error('Token is invalid ')
             
-            if(token){
-             let data=jwt.verify(token,'taotoken') 
+            if(accessToken){
+             let data=jwt.verify(accessToken,process.env.TOKEN_SECRET) 
           
              if(!data)throw new Error('token is not valid')
              var user=await model.findOne({_id:data.id})
@@ -82,7 +84,8 @@ export default class JwtData {
             }
             else throw new Error('you are not authenticated')
         } catch (error) {
-            res.status(400).json(error)
+            res.status(400)
+            next(error)
 
         }
       

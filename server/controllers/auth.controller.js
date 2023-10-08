@@ -39,11 +39,21 @@ export default class AuthController{
     login= async(req,res,next)=>{
         try {
             var token = await this.service.login(req.body)
-            if(token){
-                res.cookie('token',token)
-                res.json(`dang nhap thanh cong:${token}`)
-            }
+            res.cookie('accessToken',token.Accesstoken)
+            res.cookie('refreshToken',token.refreshToken)
+            res.json(token)
             
+        } catch (error) {
+            res.status(400)
+            next(error)
+        }
+    }
+    logout= async(req,res,next)=>{
+        try {
+            
+            var logout= await this.service.logout(req.cookies.accessToken)
+            res.cookie('blacklist_Token',logout.blacklist_token)
+            res.json(logout)
         } catch (error) {
             res.status(400)
             next(error)
@@ -62,10 +72,11 @@ export default class AuthController{
 
     refreshToken= async(req,res,next)=>{
         try {
-            
-            var refreshToken=await this.service.refreshToken(req.body)
-            res.cookies('token',refreshToken)
+            var refreshToken=await this.service.refreshToken(req.cookies.accessToken,req.cookies.refreshToken)
+            res.cookie('accessToken',refreshToken.accessToken)
+            res.cookie('refreshToken',refreshToken.refreshToken)
             res.json(refreshToken)
+
         } catch (error) {
             res.status(400)
             next(error)
