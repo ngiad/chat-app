@@ -4,7 +4,8 @@ import JwtData from "../middlewares/verify.js"
 
 const messageRouter= Router()
 const {verifyToken}=new JwtData()
-const {addMessage,deleteMessageOne,deleteMessageBoth,deleteConservation}= new MessageController()
+const {addMessage,deleteMessageOne,deleteMessageBoth,deleteConservation,getMessage}= new MessageController()
+ messageRouter.post('/',verifyToken,getMessage)
  messageRouter.post('/add',verifyToken,addMessage)
  messageRouter.delete('/deleteOne/:id',verifyToken,deleteMessageOne)
  messageRouter.delete('/deleteBoth/:id',verifyToken,deleteMessageBoth)

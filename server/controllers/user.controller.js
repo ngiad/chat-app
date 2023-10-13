@@ -11,7 +11,7 @@ export default class UserController{
     getAllUser =async(req,res,next)=>{
         try {
            
-            var allUser=  await this.service.getUser()
+            var allUser=  await this.service.getUser(req.query.page,req.query.limit)
             res.json(allUser)
          } catch (error) {
              res.status(400)
@@ -42,6 +42,15 @@ export default class UserController{
         try {
             const update = await this.service.updateProfile(req.body.email , req.body.avatar, req.user.id)
             res.json(update)
+        } catch (error) {
+            res.status(400)
+            next(error)
+        }
+    }
+    search=async(req,res,next)=>{
+        try {                                                                                                                                                                                                                                       
+            const search = await this.service.searchUser(req.body.word,req.query.page,req.query.limit)
+            res.json(search)
         } catch (error) {
             res.status(400)
             next(error)

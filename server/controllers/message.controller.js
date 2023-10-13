@@ -5,8 +5,14 @@ export default class MessageController{
     constructor(){
         this.service=new MessageSerVice()
     }
-    getMessage=()=>{
-
+    getMessage=async(req,res,next)=>{
+        try {
+            let getMessage= await this.service.getMessage(req.body.idRoom,req.query.page,req.query.limit)
+            res.json(getMessage)
+        } catch (error) {
+            res.status(400)
+            next(error)
+        }
     }
     addMessage=async(req,res,next)=>{
         try {

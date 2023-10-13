@@ -7,12 +7,33 @@ export default class UserService {
     constructor(){
         this.model= model
     }
-
-    getUser=()=>{
+    pagination =(query,page,limit )=>{
+        
+        if(!limit) return{data:query.limit(process.env.LIMIT).skip((page-1)*process.env.LIMIT),
+        } 
+        else{
+            return {
+                data:query.limit(limit).skip((page-1)*limit)
+            }
+        }
+       
+    }
+    getUser=(page,limit)=>{
         return new Promise(async(resolve, reject) => {
             try {
-                const allUser = await this.model.find({})
-                resolve(allUser)
+                const allUser = this.pagination(this.model.find({}),page,limit)
+                    let data = await allUser.data
+                    let count=await this.model.countDocuments()
+                    resolve({
+                        data:data,
+                        pagination :{
+                            
+                            prev:page>1?parseInt(page)-1:null,
+                            page:page, 
+                            next:page<Math.floor(count/process.env.LIMIT)?parseInt(page)+1:null,
+                            total:count
+                        }
+                    })
             } catch (error) {
                 reject(error)
             }
@@ -63,6 +84,31 @@ export default class UserService {
                     var updateUser=await this.model.updateOne({_id:id},{email:email})
                     resolve({update:'new email'})
                 }
+            } catch (error) {
+                reject(error)
+            }
+        })
+    }
+    
+    searchUser = (word,page,limit)=>{ 
+        return new Promise(async(resolve, reject) => {
+            try {
+                if (!word)throw new Error ('you need more infomation')
+                var search=  this.pagination( this.model.find({$text:{$search:word}}).select('-password'),page,limit)
+                 
+                const data= await search.data
+                const countQuery= await  this.model.find({$text:{$search:word}}).select('-password')
+                const count = countQuery.length
+                resolve({
+                    data:data,
+                    pagination :{
+                        
+                        prev:page>1?parseInt(page)-1:null,
+                        page:page, 
+                        next:page<Math.floor(count/process.env.LIMIT)?parseInt(page)+1:null,
+                        total:count
+                    }
+                })
             } catch (error) {
                 reject(error)
             }

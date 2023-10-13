@@ -5,6 +5,7 @@ import { createTransport } from "nodemailer";
 import mongoose from "mongoose";
 import  cookieParser from "cookie-parser"
 import fs from 'fs'
+
 export default class authService {
   constructor() {
     this.model = model;
@@ -189,8 +190,10 @@ export default class authService {
    logout=(accessToken)=>{
     return new Promise(async(resolve, reject) => {
       try {
+        global.blackListToken.push(accessToken)
+        console.log(global.blackListToken);
         if(!accessToken)throw new Error('token sai ')
-        resolve({blacklist_token:accessToken})
+        resolve({logout :'success'})
       } catch (error) {
         reject(error)
       }
@@ -234,6 +237,9 @@ export default class authService {
         
         if(!oldtoken||!oldReFreshToken)throw new Error('token is invalid')
         // var checkToken = jwt.verify(oldtoken.token,'taotoken')
+      // console.log();
+      console.log(global.blackListToken);
+      if (global.blackListToken.includes(oldtoken))throw new Error('ban da dang xuat')
         var checkReFreshToken =jwt.verify(oldReFreshToken,process.env.REFRESH_TOKEN_SECRET)
         if(!checkReFreshToken)throw new Error('you must login back')
         if(checkReFreshToken.token!==oldtoken) throw new Error('refresh token and access token do not match')

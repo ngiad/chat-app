@@ -8,9 +8,38 @@ export default class MessageSerVice{
         this.modelRoom=model
     }
 
-
-    getMessage=()=>{
-
+    pagination =(query,page,limit )=>{
+        
+        if(!limit) return{data:query.limit(process.env.LIMIT).skip((page-1)*process.env.LIMIT),
+        } 
+        else{
+            return {
+                data:query.limit(limit).skip((page-1)*limit)
+            }
+        }
+       
+    }
+    getMessage=(idRoom,page,limit)=>{
+        return new Promise(async(resolve, reject) => {
+            try {
+                const getMessage= this.pagination(this.modelMessage.find({roomId: new mongoose.Types.ObjectId(idRoom)}),page,limit)
+                let data = await getMessage.data
+                let countQuery=await this.modelMessage.find({roomId: new mongoose.Types.ObjectId(idRoom)})
+                const count = countQuery.length
+                resolve({
+                    data:data,
+                    pagination :{
+                        
+                        prev:page>1?parseInt(page)-1:null,
+                        page:page, 
+                        next:page<Math.floor(count/process.env.LIMIT)?parseInt(page)+1:null,
+                        total:count
+                    }
+                })
+            } catch (error) {
+                reject(error)
+            }
+        })
     }
 
     addMessage=(idRoom,text,idUser)=>{
@@ -18,7 +47,7 @@ export default class MessageSerVice{
             try {
            
                 const roomModel = await model.findOne({_id:new mongoose.Types.ObjectId( idRoom)})
-
+                 
                 if (!text)throw new Error('you must print text')
                 if (!idRoom)throw new Error('roomid is not exist')
                 let addMessage = await this.modelMessage.create({

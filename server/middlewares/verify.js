@@ -13,7 +13,7 @@ export default class JwtData {
     
     verifyTokenTokenAdmin =async(req,res,next)=>{
         try {
-            const token = req.cookies.token
+            var token = req.headers.authorization.split(' ')[1]
             
             if(token){
              let data=jwt.verify(token,'taotoken') 
@@ -45,7 +45,7 @@ export default class JwtData {
     
     verifyTokenTokenManager =async(req,res,next)=>{
         try {
-            const token = req.cookies.token
+            var token = req.headers.authorization.split(' ')[1]
             
             if(token){
              let data=jwt.verify(token,'taotoken') 
@@ -53,8 +53,8 @@ export default class JwtData {
              var user=await model.findOne({_id:data.id})
              if(!user.active)throw new Error('this account is not active')
              
-             if (user.role=='manager'){
-                req.data=user;
+             if (user.role=='manager'||user.role=='admin'){
+                req.user=user;
                 next()
              }
              
@@ -68,9 +68,11 @@ export default class JwtData {
 
     verifyToken =async (req,res,next) => {
         try {
-            const accessToken = req.cookies.accessToken
-            let blacklist_Token= req.cookies.blacklist_Token
-            if (accessToken==blacklist_Token)throw new Error('Token is invalid ')
+             var accessToken =req.headers.authorization.split(' ')[1]
+            // console.log(req.headers.authorization.split(' '));
+            if(global.blackListToken.includes(accessToken)){
+                throw new Error( "TOken invalid")
+            }
             
             if(accessToken){
              let data=jwt.verify(accessToken,process.env.TOKEN_SECRET) 

@@ -39,8 +39,8 @@ export default class AuthController{
     login= async(req,res,next)=>{
         try {
             var token = await this.service.login(req.body)
-            res.cookie('accessToken',token.Accesstoken)
-            res.cookie('refreshToken',token.refreshToken)
+            // res.cookie('accessToken',token.Accesstoken)
+            // res.cookie('refreshToken',token.refreshToken)
             res.json(token)
             
         } catch (error) {
@@ -50,9 +50,9 @@ export default class AuthController{
     }
     logout= async(req,res,next)=>{
         try {
-            
-            var logout= await this.service.logout(req.cookies.accessToken)
-            res.cookie('blacklist_Token',logout.blacklist_token)
+            // console.log(req.headers.authorization.split(' ')[1]);
+             var logout= await this.service.logout(req.headers.authorization.split(' ')[1])
+            // res.cookie('blacklist_Token',logout.blacklist_token)
             res.json(logout)
         } catch (error) {
             res.status(400)
@@ -72,9 +72,8 @@ export default class AuthController{
 
     refreshToken= async(req,res,next)=>{
         try {
-            var refreshToken=await this.service.refreshToken(req.cookies.accessToken,req.cookies.refreshToken)
-            res.cookie('accessToken',refreshToken.accessToken)
-            res.cookie('refreshToken',refreshToken.refreshToken)
+            // console.log(req.body.accessToken,req.body.refreshToken);
+            var refreshToken=await this.service.refreshToken(req.body.accessToken,req.body.refreshToken)
             res.json(refreshToken)
 
         } catch (error) {

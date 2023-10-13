@@ -7,7 +7,7 @@ const userSchema = Schema({
         required: true,
         match: [
             /^(([^<>()[\]\\.,;:\s@"]+(\.[^<>()[\]\\.,;:\s@"]+)*)|(".+"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$/,
-            "Please enter a valid emaial",
+            "Please enter a valid email",
         ],
         trim: true,
         unique: true
@@ -50,6 +50,9 @@ const userSchema = Schema({
     timestamps :  true
 });
 
+
+userSchema.index({'$**': 'text'})
+
 userSchema.pre("save",async function(next){
     if(!this.isModified("password")){
         return next()
@@ -62,6 +65,8 @@ userSchema.pre("save",async function(next){
 })
 
 
+
 export default model("user-chat-app",userSchema)
+
 
 

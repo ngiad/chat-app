@@ -12,8 +12,14 @@ import userRouter from "./routers/user.router.js"
 import roomRouter from "./routers/room.router.js"
 import messageRouter from "./routers/message.router.js"
 
+
+
+// const blackListToken=[1];
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
+
+
+
 
 env.config()
 
@@ -22,7 +28,7 @@ const app = express()
 const PORT = process.env.PORT || 5000
 
 
-
+global.blackListToken =[]
 
 app.use(cookieParser())
 
