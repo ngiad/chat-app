@@ -10,19 +10,19 @@ const messageSchema =  Schema(
       type: Schema.Types.ObjectId,
       required: true,
     },
-    hidden: {
-      type: [
-        {
-          user: { type: Schema.Types.ObjectId },
-         
-        },
-      ],
-      default : []
+    hidden: [{
+      type: Schema.Types.ObjectId ,
     },
+      
+    ],
 
     roomId : {
         type :  String,
         require : true
+    },
+    isDeleted:{
+      type:Boolean,
+      default:false
     }
   },
   {

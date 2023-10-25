@@ -33,8 +33,6 @@ const userSchema = Schema({
 
     list_friend: [{ type: Schema.Types.ObjectId, ref: "user-chat-app" }],
     black_list  : [{ type: Schema.Types.ObjectId, ref: "user-chat-app" }],
-    list_pending : [{ type: Schema.Types.ObjectId, ref: "user-chat-app" }],
-    myadd : [{ type: Schema.Types.ObjectId, ref: "user-chat-app" }],
     role : {
         type : String,
         default : "user"
@@ -57,9 +55,9 @@ userSchema.pre("save",async function(next){
     if(!this.isModified("password")){
         return next()
     }
-    
+       
     const salt = await bcrypt.genSalt(10)
-    const hashedPassword = await bcrypt.hash(this.password, salt)
+    const hashedPassword =  bcrypt.hash(this.password, salt)
     this.password = hashedPassword
     next()
 })

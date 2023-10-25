@@ -10,8 +10,7 @@ export default class FriendController{
     }
     getAllFriend=async(req,res,next)=>{
         try {
-           
-           var user=  await this.service.getAllFriend(req.user._id)
+           var user=  await this.service.getAllFriend(req.query.page,req.query.limit,req.user._id)
            res.json(user)
         } catch (error) {
             res.status(400)
@@ -48,10 +47,10 @@ export default class FriendController{
             next(error)
         }
     }
-    acceptFriend = async (req,res,next)=>{
+    removeBlock = async (req,res,next)=>{
         try {
-            let acceptFriend= await this.service.acceptInviteAddFriend(req.body.idFriend,req.user._id)
-            res.json(acceptFriend)
+            let removeBlock= await this.service.removeBlock(req.body.idFriend,req.user._id)
+            res.json(removeBlock)
         } catch (error) {
             res.status(400)
             next(error)
