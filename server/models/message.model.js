@@ -29,6 +29,6 @@ const messageSchema =  Schema(
     timestamps: true,
   }
 );
-
+messageSchema.index({'$**': 'text'})
 
 export default model("message-chat-app",messageSchema)

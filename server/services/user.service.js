@@ -69,37 +69,18 @@ export default class UserService {
     });
   };
 
-  updateProfile = (email, avatar, id) => {
+  updateProfile = (gender, name, userId) => {
     return new Promise(async (resolve, reject) => {
       try {
-        const findUser = await this.model
-          .findOne({ _id: id })
-          .select("email avatar list_friend");
-        if (!email && !avatar) {
+        var newUser = {}
+        if (!gender && !name) {
           throw new Error("you not change profile");
         }
-        if (email == findUser.email) throw new Error("this email is exist");
-        if (email && avatar) {
-          var updateUser = await this.model.updateOne(
-            { _id: id },
-            { email: email, avatar: avatar }
-          );
-          resolve({ update: "new email and new avatar" });
-        }
-        if (avatar) {
-          var updateUser = await this.model.updateOne(
-            { _id: id },
-            { avatar: avatar }
-          );
-          resolve({ update: " new avatar" });
-        }
-        if (email) {
-          var updateUser = await this.model.updateOne(
-            { _id: id },
-            { email: email }
-          );
-          resolve({ update: "new email" });
-        }
+        if(gender)newUser.gender=gender
+        if(name)newUser.name=name
+        
+        const updateProfile= await this.model.updateOne({_id:userId},newUser)
+        resolve({update:'success'})
       } catch (error) {
         reject(error);
       }

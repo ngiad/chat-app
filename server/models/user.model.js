@@ -31,7 +31,10 @@ const userSchema = Schema({
         trim: true
     },
 
-    list_friend: [{ type: Schema.Types.ObjectId, ref: "user-chat-app" }],
+    list_friend: [{
+        friend_id :{ type: Schema.Types.ObjectId, ref: "user-chat-app" }, 
+        time :Date
+    }],
     black_list  : [{ type: Schema.Types.ObjectId, ref: "user-chat-app" }],
     role : {
         type : String,
@@ -43,6 +46,10 @@ const userSchema = Schema({
     active:{
         type : Boolean,
          default : false
+    },
+    gender :{
+        type:String,
+        require:true
     }
 },{
     timestamps :  true
@@ -65,6 +72,7 @@ userSchema.pre("save",async function(next){
 
 
 export default model("user-chat-app",userSchema)
+
 
 
 

@@ -12,17 +12,51 @@ export default class FriendService {
       data: query,
     };
   };
-
-  getAllFriend = (page, limit, idUser) => {
+  filterGender =async(gender,userId)=>{
+    return this.model.findOne({ _id: idUser })
+    .select("list_friend -_id")
+    .populate("list_friend", "email avartar name gender")
+  }
+   isTimeWithinOneMonth(timeToCheck) {
+    const currentTime = new Date(); // Lấy thời gian hiện tại.
+    const oneMonthInMilliseconds = 30 * 24 * 60 * 60 * 1000; // 1 tháng tính bằng mili giây.
+  
+    // Tính khoảng thời gian giữa thời gian hiện tại và thời gian cần kiểm tra.
+    const timeDifference = currentTime.getTime() - new Date(timeToCheck).getTime();
+  
+    // So sánh khoảng thời gian với 1 tháng tính bằng mili giây.
+    if (timeDifference < oneMonthInMilliseconds) {
+      return true; // Thời gian nhỏ hơn 1 tháng.
+    } else {
+      return false; // Thời gian lớn hơn hoặc bằng 1 tháng.
+    }
+  }
+  
+  getAllFriend = (page, limit, idUser,gender,recent) => {
     return new Promise(async (resolve, reject) => {
       try {
         const friend = await this.pagination(
           this.model
             .findOne({ _id: idUser })
             .select("list_friend -_id")
-            .populate("list_friend", "email avartar name")
+            .populate("list_friend.friend_id", "email avartar name gender")
         ).data;
-        const dataFriend = friend.list_friend.slice(
+        let listFriendFilterGender ;
+        let listFriendFilterRecent
+        if (gender){
+          listFriendFilterGender= friend.list_friend.filter (item=>item.friend_id.gender==gender)
+        }
+        else{
+          listFriendFilterGender= friend.list_friend
+        }
+        
+        if (recent=='true'){
+          listFriendFilterRecent=listFriendFilterGender.filter(item=>this.isTimeWithinOneMonth(item.time))
+        }
+        else {
+          listFriendFilterRecent= listFriendFilterGender
+        }
+        const dataFriend = listFriendFilterRecent.slice(
           `${(parseInt(page) - 1) * limit}`,
           `${parseInt(page) * limit}`
         );
@@ -63,16 +97,17 @@ export default class FriendService {
           throw new Error("this friend is already in your friend list");
         const addFriend = await this.model.updateOne(
           { _id: idUser },
-          { $push: { list_friend: idFriend } }
+          { $push: { list_friend: {friend_id:idFriend,time:Date.now()} } }
         );
         const add = await this.model.updateOne(
           { _id: idFriend },
-          { $push: { list_friend: idUser } }
+          { $push: { list_friend: {friend_id:idUser,time:Date.now()} } }
         );
 
         resolve({ sendFriendInvitations: "success" });
       } catch (error) {
         reject(error);
+        console.log(error);
       }
     });
   };
@@ -152,26 +187,21 @@ export default class FriendService {
   blockFriend = (idFriend, idUser) => {
     return new Promise(async (resolve, reject) => {
       try {
-        let friend = await this.model.findOne({
-          _id: new mongoose.Types.ObjectId(idFriend),
-        });
-        if (!friend) throw new Error("idFriend is invalid");
-
-        console.log(friend.black_list);
+        if (!idFriend) throw new Error("you need more infomation");
         let user = await this.model.findOne({
           _id: new mongoose.Types.ObjectId(idUser),
+          black_list:{$in:[idFriend]}
         });
-        if (user.black_list.includes(idFriend))
-          throw new Error("This friend is on the block list ");
+        if (user)throw new Error("This friend is on the block list ");
         let blockFriend = await this.model.updateOne(
           { _id: new mongoose.Types.ObjectId(idUser) },
           { $push: { black_list: idFriend } }
         );
-        console.log(blockFriend);
-        if (!blockFriend) throw new Error("block friend failed");
+        if (!blockFriend.modifiedCount) throw new Error("block friend failed");
         resolve({ block: "success" });
       } catch (error) {
         reject(error);
+        console.log(error);
       }
     });
   };
@@ -207,7 +237,6 @@ export default class FriendService {
           },
         ]
       );
-      console.log(removeBlock);
       return { removeBlock: "success" };
     } catch (error) {
       throw error;

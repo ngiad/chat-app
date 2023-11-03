@@ -40,7 +40,7 @@ export default class UserController{
 
     updateProfile = async(req,res,next)=>{
         try {
-            const update = await this.service.updateProfile(req.body.email , req.body.avatar, req.user.id)
+            const update = await this.service.updateProfile(req.body.gender , req.body.name, req.user.id)
             res.json(update)
         } catch (error) {
             res.status(400)

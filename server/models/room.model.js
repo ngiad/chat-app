@@ -35,5 +35,6 @@ const roomSchema = Schema(
   }
 );
 
+roomSchema.index({'$**': 'text'})
 
 export default model("room-chat-app",roomSchema)

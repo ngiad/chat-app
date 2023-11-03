@@ -10,7 +10,8 @@ export default class FriendController{
     }
     getAllFriend=async(req,res,next)=>{
         try {
-           var user=  await this.service.getAllFriend(req.query.page,req.query.limit,req.user._id)
+            
+           var user=  await this.service.getAllFriend(req.query.page,req.query.limit,req.user._id,req.query.gender,req.query.recent)
            res.json(user)
         } catch (error) {
             res.status(400)

@@ -22,19 +22,30 @@ export default class MessageSerVice {
       };
     }
   };
-  getMessage = (idRoom, page, limit, idUser) => {
+  getMessage = (idRoom, page, limit, idUser,search) => {
     return new Promise(async (resolve, reject) => {
       try {
-        const check = await this.modelRoom.findOne({ _id: idRoom });
-        if (!check.userRoom.includes(idUser))
-          throw new Error("you dont belong to this group");
-        const getMessage = this.pagination(
-          this.modelMessage.find({
-            roomId: new mongoose.Types.ObjectId(idRoom),
-          }),
-          page,
-          limit
-        );
+        let getMessage
+        if(search){
+          getMessage = this.pagination(
+            this.modelMessage.find({
+              roomId: new mongoose.Types.ObjectId(idRoom),
+              $text:{$search:search}
+            }),
+            page,
+            limit
+          );
+        }
+         else {
+          getMessage = this.pagination(
+            this.modelMessage.find({
+              roomId: new mongoose.Types.ObjectId(idRoom),
+              
+            }),
+            page,
+            limit
+          );
+         }
         let data = await getMessage.data;
         let countQuery = await this.modelMessage.find({
           roomId: new mongoose.Types.ObjectId(idRoom),
@@ -57,75 +68,58 @@ export default class MessageSerVice {
       }
     });
   };
+   getBlackListFilter=(idUser,idFriend,filter)=>{
 
+    return this.modelUser.aggregate([
+      {
+        $match: {
+          _id: new mongoose.Types.ObjectId(idUser),
+        },
+      },
+      {
+        $project: {
+          black_list: {
+            $filter: {
+              input: "$black_list",
+              cond: {
+                $eq: [
+                  "$$this",
+                  new mongoose.Types.ObjectId(idFriend),
+                ],
+              },
+            },
+          },
+        },
+      },
+    ]);
+   }
+   getUserRoomNotIncludeIdUser=(idRoom,idUser)=>{
+    return this.modelRoom.aggregate([
+      {
+        $match: {
+          _id: new mongoose.Types.ObjectId(idRoom),
+        },
+      },
+      {
+        $project: {
+          userRoom: {
+            $filter: {
+              input: "$userRoom",
+              cond: {
+                $ne: ["$$this", new mongoose.Types.ObjectId(idUser)],
+              },
+            },
+          },
+        },
+      },
+    ]);
+   }
   addMessage = async (idRoom, text, idUser) => {
-    try {
-      let idFriend = await this.modelRoom.aggregate([
-        {
-          $match: {
-            _id: new mongoose.Types.ObjectId(idRoom),
-          },
-        },
-        {
-          $project: {
-            userRoom: {
-              $filter: {
-                input: "$userRoom",
-                cond: {
-                  $ne: ["$$this", new mongoose.Types.ObjectId(idUser)],
-                },
-              },
-            },
-          },
-        },
-      ]);
-      const checkRoom = this.modelRoom.findOne({
-        _id: new mongoose.Types.ObjectId(idRoom),
-      });
-
-      const checkBlacklist = this.modelUser.aggregate([
-        {
-          $match: {
-            _id: new mongoose.Types.ObjectId(idUser),
-          },
-        },
-        {
-          $project: {
-            black_list: {
-              $filter: {
-                input: "$black_list",
-                cond: {
-                  $eq: [
-                    "$$this",
-                    new mongoose.Types.ObjectId(idFriend[0].userRoom[0]),
-                  ],
-                },
-              },
-            },
-          },
-        },
-      ]);
-      const checkBlacklistFriend = this.modelUser.aggregate([
-        {
-          $match: {
-            _id: new mongoose.Types.ObjectId(idFriend[0].userRoom[0]),
-          },
-        },
-        {
-          $project: {
-            black_list: {
-              $filter: {
-                input: "$black_list",
-                cond: {
-                  $eq: ["$$this", new mongoose.Types.ObjectId(idUser)],
-                },
-              },
-            },
-          },
-        },
-      ]);
-      const [room, blacklistSending, blacklistRecieve] = await Promise.all([
-        checkRoom,
+   
+      let idFriend = await this.getUserRoomNotIncludeIdUser(idRoom,idUser)
+      const checkBlacklist = this.getBlackListFilter(idUser,idFriend[0].userRoom[0])
+      const checkBlacklistFriend = this.getBlackListFilter(idFriend[0].userRoom[0],idUser)
+      const [ blacklistSending, blacklistRecieve] = await Promise.all([
         checkBlacklist,
         checkBlacklistFriend,
       ]);
@@ -133,14 +127,6 @@ export default class MessageSerVice {
         throw new Error("you have blocked this user");
       if (blacklistRecieve[0].black_list.length)
         throw new Error("this user is blocked");
-      if (!room) {
-        throw new Error("this room is not exist");
-      }
-
-      if (!room.userRoom.includes(idUser))
-        throw new Error("you dont belong to this group");
-      if (!text) throw new Error("you must print text");
-      if (!idRoom) throw new Error("roomid is not exist");
       let addMessage = await this.modelMessage.create({
         message: text,
         idSend: idUser,
@@ -148,24 +134,16 @@ export default class MessageSerVice {
       });
       if (!addMessage) throw new Error("add message failed");
       return { addMessage: "success" };
-    } catch (error) {
-      throw error;
-    }
+   
   };
 
   deleteMessageOne = (idRoom, idMessage, idUser) => {
     return new Promise(async (resolve, reject) => {
       try {
-        console.log(idRoom);
-        const check = await this.modelRoom.findOne({ _id: idRoom });
-        if (!check.userRoom.includes(idUser))
-          throw new Error("you dont belong to this group");
-
         let deleteMessage = await this.modelMessage.updateOne(
           { _id: idMessage ,hidden:{$nin:[idUser    ]}},
           { $push: { hidden: new mongoose.Types.ObjectId(idUser) } }
         );
-        console.log(deleteMessage);
         if (!deleteMessage.modifiedCount) throw new Error("can not remove message");
         resolve({ deleteOne: "success" });
       } catch (error) {
@@ -190,13 +168,7 @@ export default class MessageSerVice {
   deleteConversation = (idRoom, idUser) => {
     return new Promise(async (resolve, reject) => {
       try {
-        const check = await this.modelRoom.findOne({ _id: idRoom });
-        if (!check.userRoom.includes(idUser))
-          throw new Error("you dont belong to this group");
-        if (!idRoom) throw new Error("chua co id room");
-        let deleteConversation = await this.modelMessage.deleteMany({
-          roomId: idRoom,
-        });
+        let deleteConversation = await this.modelMessage.updateMany({roomId:idRoom ,hidden:{$nin:[idUser]}}, { $push: { hidden: new mongoose.Types.ObjectId(idUser) } })
         if (!deleteConversation) throw new Error("chua co id room");
         resolve({ deleteConversation: "success" });
       } catch (error) {

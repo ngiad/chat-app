@@ -38,7 +38,7 @@ export default class MessageController{
     getMessage=async(req,res,next)=>{
         try {
           
-            let getMessage= await this.service.getMessage(req.body.idRoom,req.query.page,req.query.limit,req.user._id)
+            let getMessage= await this.service.getMessage(req.body.idRoom,req.query.page,req.query.limit,req.user._id,req.query.search)
 
             res.json(getMessage)
         } catch (error) {
@@ -78,7 +78,7 @@ export default class MessageController{
     }
     deleteConservation = async(req,res,next)=>{
         try {
-            let deleteConservation= await this.service.deleteConversation(req.body.idRoom,req.user._id)
+            let deleteConservation= await this.service.deleteConversation(req.params.idRoom,req.user._id)
             res.json(deleteConservation)
         } catch (error) {
             res.status(400)

@@ -13,7 +13,7 @@ const {getAllUser,deleteUser,getProfile, updateProfile,search} = new UserControl
 userRouter.get("/",verifyTokenTokenAdmin,getAllUser)
 userRouter.delete('/delete',verifyTokenTokenAdmin,deleteUser)
 userRouter.get('/profile',verifyToken,getProfile)
-userRouter.put('/profile/update',verifyToken,updateProfile)
+userRouter.put('/me',verifyToken,updateProfile)
 userRouter.post('/search',verifyToken,search)
 
 
