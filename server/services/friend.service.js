@@ -1,10 +1,11 @@
 import model from "../models/user.model.js";
 import jwt from "jsonwebtoken";
 import mongoose from "mongoose";
-
+import RoomService from "./room.service.js";
 export default class FriendService {
   constructor() {
     this.model = model;
+    this.RoomService= new RoomService()
   }
 
   pagination = (query) => {
@@ -91,10 +92,8 @@ export default class FriendService {
         });
         if (user.black_list.includes(idFriend))
           throw new Error("You have blocked this user");
-        let listFriend = user.list_friend;
-        let checkFriendInListFriend = listFriend.includes(idFriend);
-        if (checkFriendInListFriend)
-          throw new Error("this friend is already in your friend list");
+        const checkFriendbelongtolistfriendOfUser = await this.getFriendshipsAfterDelete(idFriend,idUser)
+       if(checkFriendbelongtolistfriendOfUser[0]. friend_exist_or_not.length)throw new Error('this user have belong to list friend')
         const addFriend = await this.model.updateOne(
           { _id: idUser },
           { $push: { list_friend: {friend_id:idFriend,time:Date.now()} } }
@@ -103,11 +102,9 @@ export default class FriendService {
           { _id: idFriend },
           { $push: { list_friend: {friend_id:idUser,time:Date.now()} } }
         );
-
         resolve({ sendFriendInvitations: "success" });
       } catch (error) {
         reject(error);
-        console.log(error);
       }
     });
   };
@@ -125,7 +122,7 @@ export default class FriendService {
             $filter: {
               input: "$list_friend",
               cond: {
-                $eq: ["$$this", new mongoose.Types.ObjectId(idFriend)],
+                $eq: ["$$this.friend_id", new mongoose.Types.ObjectId(idFriend)],
               },
             },
           },
@@ -133,7 +130,7 @@ export default class FriendService {
             $filter: {
               input: "$list_friend",
               cond: {
-                $ne: ["$$this", new mongoose.Types.ObjectId(idFriend)],
+                $ne: ["$$this.friend_id", new mongoose.Types.ObjectId(idFriend)],
               },
             },
           },

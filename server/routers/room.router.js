@@ -9,7 +9,7 @@ const roomRouter = Router()
 const {verifyToken,verifyTokenTokenAdmin}= new JwtData()
 const  {createRoom}= new RoomController()
 
-roomRouter.post('/create',verifyToken,createRoom)
+roomRouter.post('/',verifyToken,createRoom)
 
 
 

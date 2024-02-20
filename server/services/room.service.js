@@ -9,7 +9,7 @@ export default class RoomService {
     return new Promise(async (resolve, reject) => {
       try {
         const check = await this.model.findOne({
-          userRoom: { $in: [idUser, idFriend] },
+          userRoom: { $all: [idUser, idFriend] },
         });
         console.log(check);
         if (check) throw new Error("this room is exist");

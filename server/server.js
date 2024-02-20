@@ -15,10 +15,16 @@ import roomRouter from "./routers/room.router.js"
 import messageRouter from "./routers/message.router.js"
 import  CheckAuthSocket from './middlewares/checkAuthSocket.js'
 import jwt from 'jsonwebtoken'
+import modelUser from './models/user.model.js'
+import modelRoom from './models/room.model.js'
+import messageModel from "./models/message.model.js";
+import mongoose from "mongoose";
+import MessageSerVice from './services/message.service.js'
 // const blackListToken=[1];
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
+const messageSerVice= new MessageSerVice()
 
 
 
@@ -73,10 +79,13 @@ app.get('/login',(req,res)=>{
 io.use(function(socket, next){
   
     if (socket.handshake.query && socket.handshake.query.token){
-      jwt.verify(socket.handshake.query.token, 'SECRET_KEY', function(err, decoded) {
+      
+      jwt.verify(socket.handshake.query.token, 'taotoken',async function(err, decoded) {
         if (err) return next(new Error('Authentication error'));
-        console.log(socket.decoded);
-        socket.decoded = decoded;
+        let user = await modelUser.findOne({_id:decoded.id})  
+        let room = await modelRoom.find({userRoom:{$in:[new mongoose.Types.ObjectId(decoded.id)]}})
+        socket.user = user;
+        socket.room=room
         next();
       });
     }
@@ -85,11 +94,18 @@ io.use(function(socket, next){
     }    
   })
   .on('connection', function(socket) {
-      // Connection now authenticated to receive further events
-     console.log('oki ạ');
-      socket.on('message', function(message) {
-          io.emit('message', message);
-      });
+    console.log('1 socket vao hang ===',socket.id);
+    socket.on('disconnect',()=>{
+      console.log('a user disconnect');
+  })
+    socket.room.forEach(item => {
+      let room= item._id.toHexString()
+      socket.join(room)
+    });
+      socket.on('chat message',async function(message,idRoom) {
+         io.to(idRoom).emit('chat message',message)
+         const addMessage= await messageSerVice.addMessage(idRoom,message,socket.user._id)
+      })
   });
 
 

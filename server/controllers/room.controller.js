@@ -11,6 +11,7 @@ export default class RoomController {
         try {
         
             var createRoom =await this.service.createRoom(req.user.id,req.body.idFriend)
+            
             console.log(createRoom);
             res.json(createRoom)
         } catch (error) {
